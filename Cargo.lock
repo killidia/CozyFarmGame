@@ -1698,6 +1698,9 @@ name = "cozy_farm"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
 ]
 
 [[package]]

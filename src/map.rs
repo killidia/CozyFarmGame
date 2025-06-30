@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::level_loader::{Level, LevelAssetLoader, LevelHandler};
+
 const TILE_SIZE: u32 = 16;
 const TILE_SCALE: f32 = 3.0;
 const SCALED_TILE_SIZE: f32 = TILE_SIZE as f32 * TILE_SCALE;
@@ -17,9 +19,22 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, load_map)
-            .add_systems(Update, water_animation);
+        app.init_resource::<LevelHandler>()
+            .init_asset::<Level>()
+            .init_asset_loader::<LevelAssetLoader>()
+            .add_systems(Startup, (load_map, setup_level_resource))
+            .add_systems(Update, (water_animation, debug_level));
     }
+}
+
+fn setup_level_resource(mut level_handler: ResMut<LevelHandler>, asset_server: Res<AssetServer>) {
+    level_handler.0 = asset_server.load("level.json");
+}
+
+fn debug_level(level_handler: Res<LevelHandler>, levels: Res<Assets<Level>>) {
+    let level_asset = levels.get(&level_handler.0);
+
+    println!("{:?}", level_asset);
 }
 
 fn load_map(
