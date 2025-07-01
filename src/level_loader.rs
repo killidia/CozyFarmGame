@@ -4,25 +4,11 @@ use bevy::{
     reflect::TypePath,
 };
 use serde::Deserialize;
-use serde_json::from_slice;
 use thiserror::Error;
 
 #[derive(Asset, TypePath, Debug, Deserialize)]
-struct Chunk {
-    pub data: Vec<i32>,
-    pub x: i32,
-    pub y: i32,
-}
-
-#[derive(Asset, TypePath, Debug, Deserialize)]
-struct Layer {
-    pub name: String,
-    pub chunks: Vec<Chunk>,
-}
-
-#[derive(Asset, TypePath, Debug, Deserialize)]
 pub struct Level {
-    pub layers: Vec<Layer>,
+    pub data: Vec<Vec<i8>>,
 }
 
 #[derive(Resource, Default)]
@@ -37,8 +23,8 @@ pub struct LevelAssetLoader;
 pub enum LevelAssetLoaderError {
     #[error("Could not load asset: {0}")]
     Io(#[from] std::io::Error),
-    #[error("Could not parse JSON: {0}")]
-    JsonError(#[from] serde_json::error::Error),
+    #[error("Could not parse CSV: {0}")]
+    CsvError(#[from] csv::Error),
 }
 
 impl AssetLoader for LevelAssetLoader {
@@ -55,12 +41,21 @@ impl AssetLoader for LevelAssetLoader {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).await?;
 
-        let asset = from_slice::<Level>(&bytes)?;
+        let mut rdr = csv::ReaderBuilder::new()
+            .has_headers(false)
+            .delimiter(b',')
+            .from_reader(bytes.as_slice());
 
-        Ok(asset)
+        let mut rows = vec![];
+
+        for result in rdr.deserialize() {
+            rows.push(result?);
+        }
+
+        Ok(Level { data: rows })
     }
 
     fn extensions(&self) -> &[&str] {
-        &["json"]
+        &["csv"]
     }
 }

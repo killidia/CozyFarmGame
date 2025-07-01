@@ -28,7 +28,7 @@ impl Plugin for MapPlugin {
 }
 
 fn setup_level_resource(mut level_handler: ResMut<LevelHandler>, asset_server: Res<AssetServer>) {
-    level_handler.0 = asset_server.load("level.json");
+    level_handler.0 = asset_server.load("layers/ground_layer.csv");
 }
 
 fn debug_level(level_handler: Res<LevelHandler>, levels: Res<Assets<Level>>) {
