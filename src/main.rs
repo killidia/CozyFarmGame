@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use map::MapPlugin;
 
-mod level_loader;
 mod map;
 
 fn main() {
