@@ -5,6 +5,7 @@
     },
     "activeFile": "main.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
         "Bridges.tsx": {
@@ -64,11 +65,11 @@
             }
         },
         "main.tmx": {
-            "scale": 1,
-            "selectedLayer": 0,
+            "scale": 1.5,
+            "selectedLayer": -1,
             "viewCenter": {
-                "x": 117,
-                "y": 384
+                "x": 131,
+                "y": 330.66666666666663
             }
         }
     },
@@ -80,15 +81,14 @@
     "map.tileHeight": 16,
     "map.tileWidth": 16,
     "openFiles": [
-        "main.tmx",
-        "Grass.tsx"
+        "main.tmx"
     ],
     "project": "cozy_farm.tiled-project",
     "recentFiles": [
-        "Grass.tsx",
         "main.tmx",
-        "main.json",
+        "Grass.tsx",
         "Water tiles.tsx",
+        "main.json",
         "Bridges.tsx",
         "Paths.tsx",
         "Doors.tsx",
