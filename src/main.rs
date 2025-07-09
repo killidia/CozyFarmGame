@@ -3,6 +3,7 @@ use bevy_ecs_tiled::prelude::*;
 use map::MapPlugin;
 
 mod map;
+mod player;
 
 fn main() {
     App::new()
