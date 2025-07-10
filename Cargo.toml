@@ -13,4 +13,3 @@ opt-level = 3
 
 [dependencies]
 bevy = "0.16"
-bevy_ecs_tiled = "0.7.3"

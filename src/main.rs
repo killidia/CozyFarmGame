@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_ecs_tiled::prelude::*;
 use map::MapPlugin;
 
 mod map;
@@ -9,7 +8,6 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
-            TiledMapPlugin::default(),
             MapPlugin,
         ))
         .add_systems(Startup, setup_camera)
