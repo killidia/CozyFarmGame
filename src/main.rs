@@ -3,6 +3,7 @@ use map::MapPlugin;
 
 mod map;
 mod player;
+mod ron_asset_loader;
 
 fn main() {
     App::new()
@@ -20,6 +21,6 @@ fn setup_camera(mut commands: Commands) {
         Projection::Orthographic(OrthographicProjection {
             scale: 0.3,
             ..OrthographicProjection::default_2d()
-        })
+        }),
     ));
 }
