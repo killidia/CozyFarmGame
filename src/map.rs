@@ -69,6 +69,7 @@ fn load_map(
                 ),
                 AnimationIndices { first: 0, last: 3 },
                 AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
+                Name::new("water"),
             ));
         }
     }
@@ -90,6 +91,7 @@ fn load_map(
                         -(y as f32 * TILE_SIZE as f32),
                         2.0,
                     ),
+                    Name::new("grass"),
                 ));
             }
         }
