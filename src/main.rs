@@ -3,9 +3,11 @@ use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use map::MapPlugin;
 use player::PlayerPlugin;
+use crate::idle_animation::IdleAnimationPlugin;
 
 mod map;
 mod player;
+mod idle_animation;
 
 fn main() {
     App::new()
@@ -14,7 +16,8 @@ fn main() {
             EguiPlugin::default(),
             WorldInspectorPlugin::new(),
             MapPlugin,
-            PlayerPlugin
+            PlayerPlugin,
+            IdleAnimationPlugin
         ))
         .add_systems(Startup, setup_camera)
         .run();

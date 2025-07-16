@@ -1,9 +1,19 @@
 use bevy::prelude::*;
+use crate::idle_animation::{AnimationIndices, AnimationTimer};
 
 const PLAYER_SPEED: f32 = 50.0;
 
+enum PlayerDirection {
+    Front,
+    Back,
+    Left,
+    Right,
+}
+
 #[derive(Component)]
-struct Player;
+struct Player {
+    direction: PlayerDirection,
+}
 
 pub struct PlayerPlugin;
 
@@ -27,7 +37,14 @@ fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>, mut text
             }
         ),
         Transform::from_xyz(32.0, -32.0, 3.0),
-        Player,
+        Player {
+            direction: PlayerDirection::Front,
+        },
+        AnimationIndices {
+            first: 0,
+            last: 1
+        },
+        AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
         Name::new("player"),
     ));
 }

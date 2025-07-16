@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::idle_animation::{AnimationIndices, AnimationTimer};
 
 const TILE_SIZE: u8 = 16;
 
@@ -18,21 +19,11 @@ const GRASS_LAYER: [[i8; 5]; 5] = [
     [-1, -1, -1, -1, -1],
 ];
 
-#[derive(Component)]
-struct AnimationIndices {
-    first: usize,
-    last: usize,
-}
-
-#[derive(Component, Deref, DerefMut)]
-struct AnimationTimer(Timer);
-
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, load_map)
-            .add_systems(Update, water_animation);
+        app.add_systems(Startup, load_map);
     }
 }
 
@@ -93,25 +84,6 @@ fn load_map(
                     ),
                     Name::new("grass"),
                 ));
-            }
-        }
-    }
-}
-
-fn water_animation(
-    time: Res<Time>,
-    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut Sprite)>,
-) {
-    for (indices, mut timer, mut sprite) in &mut query {
-        timer.tick(time.delta());
-
-        if timer.just_finished() {
-            if let Some(atals) = &mut sprite.texture_atlas {
-                atals.index = if atals.index == indices.last {
-                    indices.first
-                } else {
-                    atals.index + 1
-                }
             }
         }
     }
