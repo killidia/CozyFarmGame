@@ -2,8 +2,6 @@ use bevy::prelude::*;
 use map::MapPlugin;
 
 mod map;
-mod player;
-mod ron_asset_loader;
 
 fn main() {
     App::new()
