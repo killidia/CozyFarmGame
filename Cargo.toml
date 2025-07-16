@@ -14,6 +14,3 @@ opt-level = 3
 [dependencies]
 bevy = "0.16"
 bevy-inspector-egui = "0.32.0"
-ron = "0.10.1"
-serde = { version = "1.0.219", features = ["derive"] }
-thiserror = "2.0.12"
