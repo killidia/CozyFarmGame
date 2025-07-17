@@ -31,11 +31,24 @@ fn update_animation_timer(time: Res<Time>, mut query: Query<&mut PlayerAnimation
 fn update_animation_movement(
     mut player_query: Query<(&MovementController, &mut Sprite, &mut PlayerAnimation)>,
 ) {
-    for (controller, _sprite, mut animation) in &mut player_query {
+    for (controller, mut sprite, mut animation) in &mut player_query {
+        let dx = controller.intent.x;
+        let dy = controller.intent.y;
+
+        if dx != 0.0 {
+            sprite.flip_x = dx < 0.0;
+        }
+
+        if dy != 0.0 {
+            sprite.flip_y = dy < 0.0;
+        }
+
         let animation_state = if controller.intent == Vec2::ZERO {
             PlayerAnimationState::Idle
-        } else {
+        } else if dx != 0.0 {
             PlayerAnimationState::Walk
+        } else {
+            PlayerAnimationState::VerticalWalk
         };
 
         animation.update_state(animation_state);
@@ -66,10 +79,10 @@ pub struct PlayerAnimation {
 enum PlayerAnimationState {
     Idle,
     Walk,
+    VerticalWalk,
 }
 
 impl PlayerAnimation {
-    // The number of idle frames
     const ANIMATION_FRAMES: usize = 2;
     const ANIMATION_INTERVAL: Duration = Duration::from_millis(300);
 
@@ -86,6 +99,14 @@ impl PlayerAnimation {
             timer: Timer::new(Self::ANIMATION_INTERVAL, TimerMode::Repeating),
             frame: 0,
             state: PlayerAnimationState::Walk,
+        }
+    }
+
+    fn vertical_walking() -> Self {
+        Self {
+            timer: Timer::new(Self::ANIMATION_INTERVAL, TimerMode::Repeating),
+            frame: 0,
+            state: PlayerAnimationState::VerticalWalk,
         }
     }
 
@@ -110,6 +131,7 @@ impl PlayerAnimation {
             match state {
                 PlayerAnimationState::Idle => *self = Self::idling(),
                 PlayerAnimationState::Walk => *self = Self::walking(),
+                PlayerAnimationState::VerticalWalk => *self = Self::vertical_walking(),
             }
         }
     }
@@ -123,6 +145,7 @@ impl PlayerAnimation {
         match self.state {
             PlayerAnimationState::Idle => self.frame,
             PlayerAnimationState::Walk => 14 + self.frame,
+            PlayerAnimationState::VerticalWalk => 6 + self.frame,
         }
     }
 }
