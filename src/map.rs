@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::idle_animation::{AnimationIndices, AnimationTimer};
+use bevy::prelude::*;
 
 const TILE_SIZE: u8 = 16;
 

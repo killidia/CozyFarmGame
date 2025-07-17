@@ -1,13 +1,13 @@
+use crate::idle_animation::IdleAnimationPlugin;
 use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use map::MapPlugin;
 use player::PlayerPlugin;
-use crate::idle_animation::IdleAnimationPlugin;
 
+mod idle_animation;
 mod map;
 mod player;
-mod idle_animation;
 
 fn main() {
     App::new()
@@ -17,7 +17,7 @@ fn main() {
             WorldInspectorPlugin::new(),
             MapPlugin,
             PlayerPlugin,
-            IdleAnimationPlugin
+            IdleAnimationPlugin,
         ))
         .add_systems(Startup, setup_camera)
         .run();
