@@ -33,22 +33,15 @@ fn update_animation_movement(
 ) {
     for (controller, mut sprite, mut animation) in &mut player_query {
         let dx = controller.intent.x;
-        let dy = controller.intent.y;
 
         if dx != 0.0 {
             sprite.flip_x = dx < 0.0;
         }
 
-        if dy != 0.0 {
-            sprite.flip_y = dy < 0.0;
-        }
-
         let animation_state = if controller.intent == Vec2::ZERO {
             PlayerAnimationState::Idle
-        } else if dx != 0.0 {
-            PlayerAnimationState::Walk
         } else {
-            PlayerAnimationState::VerticalWalk
+            PlayerAnimationState::Walk
         };
 
         animation.update_state(animation_state);
@@ -79,7 +72,6 @@ pub struct PlayerAnimation {
 enum PlayerAnimationState {
     Idle,
     Walk,
-    VerticalWalk,
 }
 
 impl PlayerAnimation {
@@ -99,14 +91,6 @@ impl PlayerAnimation {
             timer: Timer::new(Self::ANIMATION_INTERVAL, TimerMode::Repeating),
             frame: 0,
             state: PlayerAnimationState::Walk,
-        }
-    }
-
-    fn vertical_walking() -> Self {
-        Self {
-            timer: Timer::new(Self::ANIMATION_INTERVAL, TimerMode::Repeating),
-            frame: 0,
-            state: PlayerAnimationState::VerticalWalk,
         }
     }
 
@@ -131,7 +115,6 @@ impl PlayerAnimation {
             match state {
                 PlayerAnimationState::Idle => *self = Self::idling(),
                 PlayerAnimationState::Walk => *self = Self::walking(),
-                PlayerAnimationState::VerticalWalk => *self = Self::vertical_walking(),
             }
         }
     }
@@ -145,7 +128,6 @@ impl PlayerAnimation {
         match self.state {
             PlayerAnimationState::Idle => self.frame,
             PlayerAnimationState::Walk => 14 + self.frame,
-            PlayerAnimationState::VerticalWalk => 6 + self.frame,
         }
     }
 }
