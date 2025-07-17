@@ -39,9 +39,9 @@ fn update_animation_movement(
         }
 
         let animation_state = if controller.intent == Vec2::ZERO {
-            PlayerAnimationState::Idle
+            PlayerAnimationState::Idling
         } else {
-            PlayerAnimationState::Walk
+            PlayerAnimationState::Walking
         };
 
         animation.update_state(animation_state);
@@ -69,28 +69,34 @@ pub struct PlayerAnimation {
 }
 
 #[derive(PartialEq)]
-enum PlayerAnimationState {
-    Idle,
-    Walk,
+pub enum PlayerAnimationState {
+    Idling,
+    Walking,
 }
 
 impl PlayerAnimation {
-    const ANIMATION_FRAMES: usize = 2;
-    const ANIMATION_INTERVAL: Duration = Duration::from_millis(300);
+    /// The number of idle frames.
+    const IDLE_FRAMES: usize = 2;
+    /// The duration of each idle frame.
+    const IDLE_INTERVAL: Duration = Duration::from_millis(500);
+    /// The number of walking frames.
+    const WALKING_FRAMES: usize = 2;
+    /// The duration of each walking frame.
+    const WALKING_INTERVAL: Duration = Duration::from_millis(300);
 
     fn idling() -> Self {
         Self {
-            timer: Timer::new(Self::ANIMATION_INTERVAL, TimerMode::Repeating),
+            timer: Timer::new(Self::IDLE_INTERVAL, TimerMode::Repeating),
             frame: 0,
-            state: PlayerAnimationState::Idle,
+            state: PlayerAnimationState::Idling,
         }
     }
 
     fn walking() -> Self {
         Self {
-            timer: Timer::new(Self::ANIMATION_INTERVAL, TimerMode::Repeating),
+            timer: Timer::new(Self::WALKING_INTERVAL, TimerMode::Repeating),
             frame: 0,
-            state: PlayerAnimationState::Walk,
+            state: PlayerAnimationState::Walking,
         }
     }
 
@@ -98,36 +104,39 @@ impl PlayerAnimation {
         Self::idling()
     }
 
-    // Update animation timer
-    fn update_timer(&mut self, delta: Duration) {
+    /// Update animation timers.
+    pub fn update_timer(&mut self, delta: Duration) {
         self.timer.tick(delta);
-
         if !self.timer.finished() {
             return;
         }
-
-        self.frame = (self.frame + 1) % Self::ANIMATION_FRAMES;
+        self.frame = (self.frame + 1)
+            % match self.state {
+                PlayerAnimationState::Idling => Self::IDLE_FRAMES,
+                PlayerAnimationState::Walking => Self::WALKING_FRAMES,
+            };
     }
 
-    // Update animation state if it changes
-    fn update_state(&mut self, state: PlayerAnimationState) {
+    /// Update animation state if it changes.
+    pub fn update_state(&mut self, state: PlayerAnimationState) {
         if self.state != state {
             match state {
-                PlayerAnimationState::Idle => *self = Self::idling(),
-                PlayerAnimationState::Walk => *self = Self::walking(),
+                PlayerAnimationState::Idling => *self = Self::idling(),
+                PlayerAnimationState::Walking => *self = Self::walking(),
             }
         }
     }
 
-    // Whether animation changed this tick.
-    fn changed(&self) -> bool {
+    /// Whether animation changed this tick.
+    pub fn changed(&self) -> bool {
         self.timer.finished()
     }
 
-    fn get_atlas_index(&self) -> usize {
+    /// Return sprite index in the atlas.
+    pub fn get_atlas_index(&self) -> usize {
         match self.state {
-            PlayerAnimationState::Idle => self.frame,
-            PlayerAnimationState::Walk => 14 + self.frame,
+            PlayerAnimationState::Idling => self.frame,
+            PlayerAnimationState::Walking => 14 + self.frame,
         }
     }
 }
