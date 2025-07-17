@@ -1,5 +1,7 @@
+mod animation;
 mod movement;
 
+use crate::player::animation::{PlayerAnimation, PlayerAnimationPlugin};
 use crate::player::movement::{MovementController, MovementPlugin};
 use crate::AppSystems;
 use bevy::prelude::*;
@@ -8,7 +10,7 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(MovementPlugin)
+        app.add_plugins((MovementPlugin, PlayerAnimationPlugin))
             .add_systems(Startup, spawn_player)
             .add_systems(
                 Update,
@@ -37,6 +39,7 @@ fn spawn_player(
         Transform::from_xyz(32.0, -32.0, 3.0),
         Player,
         MovementController::default(),
+        PlayerAnimation::new(),
         Name::new("Player"),
     ));
 }
