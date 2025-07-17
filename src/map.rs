@@ -1,4 +1,3 @@
-use crate::idle_animation::{AnimationIndices, AnimationTimer};
 use bevy::prelude::*;
 
 const TILE_SIZE: u8 = 16;
@@ -23,7 +22,7 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, load_map);
+        app.add_systems(Startup, load_map).add_systems(Update, water_animation);
     }
 }
 
@@ -88,3 +87,31 @@ fn load_map(
         }
     }
 }
+
+fn water_animation(
+    time: Res<Time>,
+    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut Sprite)>,
+) {
+    for (indices, mut timer, mut sprite) in &mut query {
+        timer.tick(time.delta());
+
+        if timer.just_finished() {
+            if let Some(atlas) = &mut sprite.texture_atlas {
+                atlas.index = if atlas.index == indices.last {
+                    indices.first
+                } else {
+                    atlas.index + 1
+                }
+            }
+        }
+    }
+}
+
+#[derive(Component)]
+struct AnimationIndices {
+    first: usize,
+    last: usize,
+}
+
+#[derive(Component, Deref, DerefMut)]
+struct AnimationTimer(Timer);
