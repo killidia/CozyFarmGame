@@ -9,15 +9,6 @@ mod player;
 
 fn main() {
     App::new()
-        .configure_sets(
-            Update,
-            (
-                AppSystems::TickTimers,
-                AppSystems::RecordInput,
-                AppSystems::Update,
-            )
-                .chain(),
-        )
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             EguiPlugin::default(),
@@ -37,11 +28,4 @@ fn setup_camera(mut commands: Commands) {
             ..OrthographicProjection::default_2d()
         }),
     ));
-}
-
-#[derive(SystemSet, Debug, Clone, Copy, Eq, PartialEq, Hash, PartialOrd, Ord)]
-enum AppSystems {
-    TickTimers,
-    RecordInput,
-    Update,
 }

@@ -1,21 +1,13 @@
-mod animation;
-mod movement;
-
-use crate::player::animation::{PlayerAnimation, PlayerAnimationPlugin};
-use crate::player::movement::{MovementController, MovementPlugin};
-use crate::AppSystems;
 use bevy::prelude::*;
+
+const PLAYER_SPEED: f32 = 50.0;
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((MovementPlugin, PlayerAnimationPlugin))
-            .add_systems(Startup, spawn_player)
-            .add_systems(
-                Update,
-                record_player_directional_input.in_set(AppSystems::RecordInput),
-            );
+        app.add_systems(Startup, spawn_player)
+            .add_systems(Update, movement);
     }
 }
 
@@ -38,39 +30,37 @@ fn spawn_player(
         ),
         Transform::from_xyz(32.0, -32.0, 3.0),
         Player,
-        MovementController::default(),
-        PlayerAnimation::new(),
         Name::new("Player"),
     ));
 }
 
-fn record_player_directional_input(
+fn movement(
+    time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
-    mut controller_query: Query<&mut MovementController, With<Player>>,
+    mut player_transform: Single<&mut Transform, With<Player>>,
 ) {
-    let mut intent = Vec2::ZERO;
+    let mut direction = Vec2::ZERO;
 
     if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
-        intent.y += 1.0;
+        direction.y += 1.0;
     }
     if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) {
-        intent.y -= 1.0;
+        direction.y -= 1.0;
     }
     if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
-        intent.x -= 1.0;
+        direction.x -= 1.0;
     }
     if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
-        intent.x += 1.0;
+        direction.x += 1.0;
     }
 
-    // Normalize intent so that diagonal movement is the same speed as horizontal / vertical.
+    // Normalize direction so that diagonal movement is the same speed as horizontal / vertical.
     // This should be omitted if the input comes from an analog stick instead.
-    let intent = intent.normalize_or_zero();
-
-    // Apply movement intent to controllers.
-    for mut controller in &mut controller_query {
-        controller.intent = intent;
+    if direction != Vec2::ZERO {
+        direction = direction.normalize();
     }
+
+    player_transform.translation += direction.extend(0.0) * PLAYER_SPEED * time.delta_secs();
 }
 
 #[derive(Component)]
