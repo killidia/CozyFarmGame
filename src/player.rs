@@ -29,7 +29,10 @@ fn spawn_player(
             },
         ),
         Transform::from_xyz(32.0, -32.0, 3.0),
-        Player,
+        Player {
+            current_direction: Vec2::ZERO,
+            state: PlayerState::default(),
+        },
         Name::new("Player"),
     ));
 }
@@ -63,5 +66,36 @@ fn movement(
     player_transform.translation += direction.extend(0.0) * PLAYER_SPEED * time.delta_secs();
 }
 
+fn player_sprite_indicies(state: &PlayerState, direction: Vec2) -> (usize, usize) {
+    match state {
+        PlayerState::Idle => {
+            match direction {
+                Vec2::X => (12, 13),   // Right
+                Vec2::NEG_X => (8, 9), // Left
+                Vec2::Y => (4, 5),     // Up
+                _ => (0, 1),           // Down
+            }
+        }
+        PlayerState::Walking => {
+            match direction {
+                Vec2::X => (14, 15),     // Right
+                Vec2::NEG_X => (10, 11), // Left
+                Vec2::Y => (6, 7),       // Up
+                _ => (2, 3),             // Down
+            }
+        }
+    }
+}
+
+#[derive(Default)]
+enum PlayerState {
+    #[default]
+    Idle,
+    Walking,
+}
+
 #[derive(Component)]
-struct Player;
+struct Player {
+    current_direction: Vec2,
+    state: PlayerState,
+}

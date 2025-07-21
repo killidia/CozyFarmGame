@@ -6,6 +6,7 @@ use map::MapPlugin;
 
 mod map;
 mod player;
+mod sprite_animation;
 
 fn main() {
     App::new()
