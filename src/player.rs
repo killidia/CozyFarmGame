@@ -1,3 +1,4 @@
+use crate::sprite_animation::{AnimationIndices, FrameTimer};
 use bevy::prelude::*;
 
 const PLAYER_SPEED: f32 = 50.0;
@@ -7,7 +8,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player)
-            .add_systems(Update, movement);
+            .add_systems(Update, (movement, update_indices));
     }
 }
 
@@ -33,6 +34,8 @@ fn spawn_player(
             current_direction: Vec2::ZERO,
             state: PlayerState::default(),
         },
+        AnimationIndices { first: 0, last: 1 },
+        FrameTimer(Timer::from_seconds(0.300, TimerMode::Repeating)),
         Name::new("Player"),
     ));
 }
@@ -40,7 +43,7 @@ fn spawn_player(
 fn movement(
     time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
-    mut player_transform: Single<&mut Transform, With<Player>>,
+    mut player: Single<(&mut Transform, &mut Player)>,
 ) {
     let mut direction = Vec2::ZERO;
 
@@ -61,12 +64,31 @@ fn movement(
     // This should be omitted if the input comes from an analog stick instead.
     if direction != Vec2::ZERO {
         direction = direction.normalize();
+        player.1.state = PlayerState::Walking;
+    } else {
+        player.1.state = PlayerState::Idle;
     }
 
-    player_transform.translation += direction.extend(0.0) * PLAYER_SPEED * time.delta_secs();
+    player.0.translation += direction.extend(0.0) * PLAYER_SPEED * time.delta_secs();
+    player.1.current_direction = direction;
 }
 
-fn player_sprite_indicies(state: &PlayerState, direction: Vec2) -> (usize, usize) {
+fn update_indices(mut query: Query<(&mut AnimationIndices, &mut Sprite, &Player)>) {
+    for (mut indices, mut sprite, player) in &mut query {
+        let new_indices = player_sprite_indices(&player.state, player.current_direction);
+
+        if new_indices.0 != indices.first {
+            indices.first = new_indices.0;
+            indices.last = new_indices.1;
+
+            if let Some(atlas) = &mut sprite.texture_atlas {
+                atlas.index = indices.first;
+            }
+        }
+    }
+}
+
+fn player_sprite_indices(state: &PlayerState, direction: Vec2) -> (usize, usize) {
     match state {
         PlayerState::Idle => {
             match direction {

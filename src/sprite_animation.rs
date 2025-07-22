@@ -1,56 +1,37 @@
 use bevy::prelude::*;
 
-pub struct SpriteAnimation;
+pub struct SpriteAnimationPlugin;
 
-impl Plugin for SpriteAnimation {
+impl Plugin for SpriteAnimationPlugin {
     fn build(&self, app: &mut App) {
-        app;
+        app.add_systems(Update, animate_complex_sprites);
     }
 }
 
-#[derive(Component, Default)]
-struct AnimSprite {
-    sprites: usize,
-    repeating: bool,
-    disable: bool,
-}
+fn animate_complex_sprites(
+    time: Res<Time>,
+    mut query: Query<(&AnimationIndices, &mut FrameTimer, &mut Sprite)>,
+) {
+    for (indices, mut timer, mut sprite) in &mut query {
+        timer.0.tick(time.delta());
 
-#[derive(Component)]
-struct AnimSpriteTimer {
-    timer: Timer,
-}
-
-#[derive(Component)]
-struct AnimationIndices {
-    first: usize,
-    last: usize,
-}
-
-#[derive(Component)]
-struct FrameTimer(Timer);
-
-impl AnimSprite {
-    fn new(sprites: usize, repeating: bool) -> Self {
-        Self {
-            sprites: sprites - 1,
-            repeating,
-            disable: false,
+        if timer.0.just_finished() {
+            if let Some(atlas) = &mut sprite.texture_atlas {
+                atlas.index = if atlas.index == indices.last {
+                    indices.first
+                } else {
+                    atlas.index + 1
+                }
+            }
         }
     }
 }
 
-impl Default for AnimSpriteTimer {
-    fn default() -> Self {
-        Self {
-            timer: Timer::from_seconds(0.075, TimerMode::Repeating),
-        }
-    }
+#[derive(Component)]
+pub struct AnimationIndices {
+    pub first: usize,
+    pub last: usize,
 }
 
-impl AnimSpriteTimer {
-    fn new(seconds: f32) -> Self {
-        Self {
-            timer: Timer::from_seconds(seconds, TimerMode::Repeating),
-        }
-    }
-}
+#[derive(Component)]
+pub struct FrameTimer(pub Timer);

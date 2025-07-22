@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use map::MapPlugin;
+use sprite_animation::SpriteAnimationPlugin;
 
 mod map;
 mod player;
@@ -16,6 +17,7 @@ fn main() {
             WorldInspectorPlugin::new(),
             MapPlugin,
             PlayerPlugin,
+            SpriteAnimationPlugin,
         ))
         .add_systems(Startup, setup_camera)
         .run();
