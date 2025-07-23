@@ -1,4 +1,6 @@
 use crate::sprite_animation::{AnimationIndices, FrameTimer};
+use avian2d::debug_render::DebugRender;
+use avian2d::prelude::{Collider, RigidBody};
 use bevy::prelude::*;
 
 const TILE_SIZE: u8 = 16;
@@ -118,21 +120,64 @@ fn load_map(
     for (y, row) in BIOME_LAYER.iter().enumerate() {
         for (x, tile) in row.iter().enumerate() {
             if tile >= &0 {
-                commands.spawn((
-                    Sprite::from_atlas_image(
-                        biome_texture.clone(),
-                        TextureAtlas {
-                            layout: biome_texture_atlas_layout.clone(),
-                            index: *tile as usize,
-                        },
-                    ),
-                    Transform::from_xyz(
-                        x as f32 * TILE_SIZE as f32,
-                        -(y as f32 * TILE_SIZE as f32),
-                        4.0,
-                    ),
-                    Name::new("Grass Biome"),
-                ));
+                let tile_entity = commands
+                    .spawn((
+                        Sprite::from_atlas_image(
+                            biome_texture.clone(),
+                            TextureAtlas {
+                                layout: biome_texture_atlas_layout.clone(),
+                                index: *tile as usize,
+                            },
+                        ),
+                        Transform::from_xyz(
+                            x as f32 * TILE_SIZE as f32,
+                            -(y as f32 * TILE_SIZE as f32),
+                            4.0,
+                        ),
+                        Name::new("Grass Biome"),
+                    ))
+                    .id();
+
+                // add collision for some tiles
+                if tile == &9 {
+                    commands.entity(tile_entity).insert((
+                        RigidBody::Static,
+                        Collider::rectangle(8.0, 8.0),
+                        DebugRender::default(),
+                    ));
+                } else if tile == &17 {
+                    commands.entity(tile_entity).insert((
+                        RigidBody::Static,
+                        Collider::circle(6.0),
+                        DebugRender::default(),
+                    ));
+                } else if tile == &12 {
+                    // Créer une entité collider séparée décalée vers la gauche
+                    commands.spawn((
+                        RigidBody::Static,
+                        Collider::rectangle(4.0, 8.0),
+                        Transform::from_xyz(
+                            x as f32 * TILE_SIZE as f32 + 6.0, // Position de base - décalage gauche
+                            -(y as f32 * TILE_SIZE as f32) - 2.0,
+                            4.0,
+                        ),
+                        DebugRender::default(),
+                        Name::new("Collider Tile 12"),
+                    ));
+                } else if tile == &13 {
+                    // Créer une entité collider séparée décalée vers la droite
+                    commands.spawn((
+                        RigidBody::Static,
+                        Collider::rectangle(4.0, 8.0),
+                        Transform::from_xyz(
+                            x as f32 * TILE_SIZE as f32 - 6.0, // Position de base + décalage droite
+                            -(y as f32 * TILE_SIZE as f32) - 2.0,
+                            4.0,
+                        ),
+                        DebugRender::default(),
+                        Name::new("Collider Tile 13"),
+                    ));
+                }
             }
         }
     }

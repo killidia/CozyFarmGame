@@ -1,5 +1,7 @@
 use crate::sprite_animation::{AnimationIndices, FrameTimer};
-use avian2d::prelude::{Collider, DebugRender, RigidBody};
+use avian2d::prelude::{
+    Collider, DebugRender, GravityScale, LinearVelocity, LockedAxes, RigidBody,
+};
 use bevy::prelude::*;
 
 const PLAYER_SPEED: f32 = 50.0;
@@ -38,9 +40,11 @@ fn spawn_player(
             },
             AnimationIndices { first: 0, last: 1 },
             FrameTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
-            RigidBody::Kinematic,
+            RigidBody::Dynamic,
             Collider::circle(6.0),
-            DebugRender::default().with_collider_color(Color::srgb(1.0, 0.0, 0.0)),
+            LockedAxes::ROTATION_LOCKED,
+            GravityScale(0.0),
+            DebugRender::default(),
             Name::new("Player"),
         ))
         .with_children(|parent| {
@@ -55,9 +59,8 @@ fn spawn_player(
 }
 
 fn movement(
-    time: Res<Time>,
     input: Res<ButtonInput<KeyCode>>,
-    mut player: Single<(&mut Transform, &mut Player)>,
+    mut player: Single<(&mut LinearVelocity, &mut Player)>,
 ) {
     let mut direction = Vec2::ZERO;
 
@@ -79,11 +82,14 @@ fn movement(
     if direction != Vec2::ZERO {
         direction = direction.normalize();
         player.1.state = PlayerState::Walking;
+
+        player.0.0 = direction * PLAYER_SPEED;
     } else {
         player.1.state = PlayerState::Idle;
+
+        player.0.0 = Vec2::ZERO;
     }
 
-    player.0.translation += direction.extend(0.0) * PLAYER_SPEED * time.delta_secs();
     player.1.current_direction = direction;
 }
 
