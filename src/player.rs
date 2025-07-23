@@ -1,6 +1,6 @@
 use crate::sprite_animation::{AnimationIndices, FrameTimer};
 use avian2d::prelude::{
-    Collider, DebugRender, GravityScale, LinearVelocity, LockedAxes, RigidBody,
+    Collider, GravityScale, LinearVelocity, LockedAxes, RigidBody,
 };
 use bevy::prelude::*;
 
@@ -44,7 +44,6 @@ fn spawn_player(
             Collider::circle(6.0),
             LockedAxes::ROTATION_LOCKED,
             GravityScale(0.0),
-            DebugRender::default(),
             Name::new("Player"),
         ))
         .with_children(|parent| {

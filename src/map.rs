@@ -1,5 +1,4 @@
 use crate::sprite_animation::{AnimationIndices, FrameTimer};
-use avian2d::debug_render::DebugRender;
 use avian2d::prelude::{Collider, RigidBody};
 use bevy::prelude::*;
 
@@ -140,17 +139,13 @@ fn load_map(
 
                 // add collision for some tiles
                 if tile == &9 {
-                    commands.entity(tile_entity).insert((
-                        RigidBody::Static,
-                        Collider::rectangle(8.0, 8.0),
-                        DebugRender::default(),
-                    ));
+                    commands
+                        .entity(tile_entity)
+                        .insert((RigidBody::Static, Collider::rectangle(8.0, 8.0)));
                 } else if tile == &17 {
-                    commands.entity(tile_entity).insert((
-                        RigidBody::Static,
-                        Collider::circle(6.0),
-                        DebugRender::default(),
-                    ));
+                    commands
+                        .entity(tile_entity)
+                        .insert((RigidBody::Static, Collider::circle(6.0)));
                 } else if tile == &12 {
                     // Créer une entité collider séparée décalée vers la gauche
                     commands.spawn((
@@ -161,7 +156,6 @@ fn load_map(
                             -(y as f32 * TILE_SIZE as f32) - 2.0,
                             4.0,
                         ),
-                        DebugRender::default(),
                         Name::new("Collider Tile 12"),
                     ));
                 } else if tile == &13 {
@@ -174,7 +168,6 @@ fn load_map(
                             -(y as f32 * TILE_SIZE as f32) - 2.0,
                             4.0,
                         ),
-                        DebugRender::default(),
                         Name::new("Collider Tile 13"),
                     ));
                 }
