@@ -1,4 +1,5 @@
 use crate::player::PlayerPlugin;
+use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -15,6 +16,7 @@ fn main() {
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             EguiPlugin::default(),
             WorldInspectorPlugin::new(),
+            PhysicsPlugins::default(),
             MapPlugin,
             PlayerPlugin,
             SpriteAnimationPlugin,

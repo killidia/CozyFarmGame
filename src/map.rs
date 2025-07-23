@@ -1,3 +1,4 @@
+use crate::sprite_animation::{AnimationIndices, FrameTimer};
 use bevy::prelude::*;
 
 const TILE_SIZE: u8 = 16;
@@ -28,12 +29,24 @@ const GRASS_LAYER: [[i8; 10]; 10] = [
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
 ];
 
+const BIOME_LAYER: [[i8; 10]; 10] = [
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, 3, 4, -1, -1, -1, -1, -1],
+    [-1, -1, -1, 12, 13, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, 0, -1, -1],
+    [-1, -1, -1, -1, 17, -1, -1, 9, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+];
+
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, load_map)
-            .add_systems(Update, water_animation);
+        app.add_systems(Startup, load_map);
     }
 }
 
@@ -44,13 +57,16 @@ fn load_map(
 ) {
     let water_texture = asset_server.load("tilesets/water.png");
     let grass_texture = asset_server.load("tilesets/grass.png");
+    let biome_texture = asset_server.load("tilesets/grass_biome.png");
 
     let water_layout =
         TextureAtlasLayout::from_grid(UVec2::splat(TILE_SIZE as u32), 4, 1, None, None);
     let grass_layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 11, 7, None, None);
+    let biome_layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 9, 5, None, None);
 
     let water_texture_atlas_layout = texture_atlas_layouts.add(water_layout);
     let grass_texture_atlas_layout = texture_atlas_layouts.add(grass_layout);
+    let biome_texture_atlas_layout = texture_atlas_layouts.add(biome_layout);
 
     // spawn water layers
     for (y, row) in WATER_LAYER.iter().enumerate() {
@@ -69,7 +85,7 @@ fn load_map(
                     1.0,
                 ),
                 AnimationIndices { first: 0, last: 3 },
-                AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
+                FrameTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
                 Name::new("water"),
             ));
         }
@@ -97,32 +113,27 @@ fn load_map(
             }
         }
     }
-}
 
-fn water_animation(
-    time: Res<Time>,
-    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut Sprite)>,
-) {
-    for (indices, mut timer, mut sprite) in &mut query {
-        timer.tick(time.delta());
-
-        if timer.just_finished() {
-            if let Some(atlas) = &mut sprite.texture_atlas {
-                atlas.index = if atlas.index == indices.last {
-                    indices.first
-                } else {
-                    atlas.index + 1
-                }
+    // spawn grass biome layer
+    for (y, row) in BIOME_LAYER.iter().enumerate() {
+        for (x, tile) in row.iter().enumerate() {
+            if tile >= &0 {
+                commands.spawn((
+                    Sprite::from_atlas_image(
+                        biome_texture.clone(),
+                        TextureAtlas {
+                            layout: biome_texture_atlas_layout.clone(),
+                            index: *tile as usize,
+                        },
+                    ),
+                    Transform::from_xyz(
+                        x as f32 * TILE_SIZE as f32,
+                        -(y as f32 * TILE_SIZE as f32),
+                        4.0,
+                    ),
+                    Name::new("Grass Biome"),
+                ));
             }
         }
     }
 }
-
-#[derive(Component)]
-struct AnimationIndices {
-    first: usize,
-    last: usize,
-}
-
-#[derive(Component, Deref, DerefMut)]
-struct AnimationTimer(Timer);

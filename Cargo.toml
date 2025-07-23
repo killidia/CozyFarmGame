@@ -14,3 +14,4 @@ opt-level = 3
 [dependencies]
 bevy = "0.16"
 bevy-inspector-egui = "0.32.0"
+avian2d = "0.3.1"

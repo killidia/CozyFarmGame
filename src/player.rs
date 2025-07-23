@@ -36,7 +36,7 @@ fn spawn_player(
                 state: PlayerState::default(),
             },
             AnimationIndices { first: 0, last: 1 },
-            FrameTimer(Timer::from_seconds(0.300, TimerMode::Repeating)),
+            FrameTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
             Name::new("Player"),
         ))
         .with_children(|parent| {
