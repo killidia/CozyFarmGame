@@ -19,16 +19,5 @@ fn main() {
             PlayerPlugin,
             SpriteAnimationPlugin,
         ))
-        .add_systems(Startup, setup_camera)
         .run();
-}
-
-fn setup_camera(mut commands: Commands) {
-    commands.spawn((
-        Camera2d,
-        Projection::Orthographic(OrthographicProjection {
-            scale: 0.3,
-            ..OrthographicProjection::default_2d()
-        }),
-    ));
 }

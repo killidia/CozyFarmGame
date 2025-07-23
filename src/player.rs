@@ -21,23 +21,33 @@ fn spawn_player(
     let player_layout = TextureAtlasLayout::from_grid(UVec2::splat(48), 4, 4, None, None);
     let player_texture_atlas_layout = texture_atlas_layouts.add(player_layout);
 
-    commands.spawn((
-        Sprite::from_atlas_image(
-            player_texture,
-            TextureAtlas {
-                layout: player_texture_atlas_layout,
-                index: 0,
+    commands
+        .spawn((
+            Sprite::from_atlas_image(
+                player_texture,
+                TextureAtlas {
+                    layout: player_texture_atlas_layout,
+                    index: 0,
+                },
+            ),
+            Transform::from_xyz(32.0, -32.0, 3.0),
+            Player {
+                current_direction: Vec2::ZERO,
+                state: PlayerState::default(),
             },
-        ),
-        Transform::from_xyz(32.0, -32.0, 3.0),
-        Player {
-            current_direction: Vec2::ZERO,
-            state: PlayerState::default(),
-        },
-        AnimationIndices { first: 0, last: 1 },
-        FrameTimer(Timer::from_seconds(0.300, TimerMode::Repeating)),
-        Name::new("Player"),
-    ));
+            AnimationIndices { first: 0, last: 1 },
+            FrameTimer(Timer::from_seconds(0.300, TimerMode::Repeating)),
+            Name::new("Player"),
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                Camera2d,
+                Projection::Orthographic(OrthographicProjection {
+                    scale: 0.3,
+                    ..OrthographicProjection::default_2d()
+                }),
+            ));
+        });
 }
 
 fn movement(
