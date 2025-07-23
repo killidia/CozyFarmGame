@@ -1,4 +1,5 @@
 use crate::sprite_animation::{AnimationIndices, FrameTimer};
+use avian2d::prelude::{Collider, DebugRender, RigidBody};
 use bevy::prelude::*;
 
 const PLAYER_SPEED: f32 = 50.0;
@@ -37,6 +38,9 @@ fn spawn_player(
             },
             AnimationIndices { first: 0, last: 1 },
             FrameTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
+            RigidBody::Kinematic,
+            Collider::circle(6.0),
+            DebugRender::default().with_collider_color(Color::srgb(1.0, 0.0, 0.0)),
             Name::new("Player"),
         ))
         .with_children(|parent| {
