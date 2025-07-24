@@ -143,9 +143,11 @@ fn load_map(
                         .entity(tile_entity)
                         .insert((RigidBody::Static, Collider::rectangle(8.0, 8.0)));
                 } else if tile == &17 {
-                    commands
-                        .entity(tile_entity)
-                        .insert((RigidBody::Static, Collider::circle(6.0)));
+                    commands.entity(tile_entity).insert((
+                        RigidBody::Static,
+                        Collider::circle(6.0),
+                        Rock,
+                    ));
                 } else if tile == &12 {
                     // Créer une entité collider séparée décalée vers la gauche
                     commands.spawn((
@@ -175,3 +177,6 @@ fn load_map(
         }
     }
 }
+
+#[derive(Component)]
+pub struct Rock;

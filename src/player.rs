@@ -1,5 +1,7 @@
 use crate::sprite_animation::{AnimationIndices, FrameTimer};
-use avian2d::prelude::{Collider, GravityScale, LinearVelocity, LockedAxes, RigidBody};
+use avian2d::prelude::{
+    Collider, CollidingEntities, GravityScale, LinearVelocity, LockedAxes, RigidBody,
+};
 use bevy::prelude::*;
 
 const PLAYER_SPEED: f32 = 50.0;
@@ -42,6 +44,7 @@ fn spawn_player(
             Collider::circle(6.0),
             LockedAxes::ROTATION_LOCKED,
             GravityScale(0.0),
+            CollidingEntities::default(),
             Name::new("Player"),
         ))
         .with_children(|parent| {
@@ -136,7 +139,7 @@ enum PlayerState {
 }
 
 #[derive(Component)]
-struct Player {
+pub struct Player {
     current_direction: PlayerDirection,
     state: PlayerState,
 }
