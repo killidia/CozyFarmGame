@@ -1,7 +1,5 @@
 use crate::sprite_animation::{AnimationIndices, FrameTimer};
-use avian2d::prelude::{
-    Collider, GravityScale, LinearVelocity, LockedAxes, RigidBody,
-};
+use avian2d::prelude::{Collider, GravityScale, LinearVelocity, LockedAxes, RigidBody};
 use bevy::prelude::*;
 
 const PLAYER_SPEED: f32 = 50.0;
@@ -35,7 +33,7 @@ fn spawn_player(
             ),
             Transform::from_xyz(32.0, -32.0, 3.0),
             Player {
-                current_direction: Vec2::ZERO,
+                current_direction: PlayerDirection::Down,
                 state: PlayerState::default(),
             },
             AnimationIndices { first: 0, last: 1 },
@@ -65,15 +63,23 @@ fn movement(
 
     if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
         direction.y += 1.0;
+
+        player.1.current_direction = PlayerDirection::Up;
     }
     if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) {
         direction.y -= 1.0;
+
+        player.1.current_direction = PlayerDirection::Down;
     }
     if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
         direction.x -= 1.0;
+
+        player.1.current_direction = PlayerDirection::Left;
     }
     if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
         direction.x += 1.0;
+
+        player.1.current_direction = PlayerDirection::Right;
     }
 
     // Normalize direction so that diagonal movement is the same speed as horizontal / vertical.
@@ -88,13 +94,11 @@ fn movement(
 
         player.0.0 = Vec2::ZERO;
     }
-
-    player.1.current_direction = direction;
 }
 
 fn update_indices(mut query: Query<(&mut AnimationIndices, &mut Sprite, &Player)>) {
     for (mut indices, mut sprite, player) in &mut query {
-        let new_indices = player_sprite_indices(&player.state, player.current_direction);
+        let new_indices = player_sprite_indices(&player.state, &player.current_direction);
 
         if new_indices.0 != indices.first {
             indices.first = new_indices.0;
@@ -107,24 +111,20 @@ fn update_indices(mut query: Query<(&mut AnimationIndices, &mut Sprite, &Player)
     }
 }
 
-fn player_sprite_indices(state: &PlayerState, direction: Vec2) -> (usize, usize) {
+fn player_sprite_indices(state: &PlayerState, direction: &PlayerDirection) -> (usize, usize) {
     match state {
-        PlayerState::Idle => {
-            match direction {
-                Vec2::X => (12, 13),   // Right
-                Vec2::NEG_X => (8, 9), // Left
-                Vec2::Y => (4, 5),     // Up
-                _ => (0, 1),           // Down
-            }
-        }
-        PlayerState::Walking => {
-            match direction {
-                Vec2::X => (14, 15),     // Right
-                Vec2::NEG_X => (10, 11), // Left
-                Vec2::Y => (6, 7),       // Up
-                _ => (2, 3),             // Down
-            }
-        }
+        PlayerState::Idle => match direction {
+            PlayerDirection::Right => (12, 13),
+            PlayerDirection::Left => (8, 9),
+            PlayerDirection::Up => (4, 5),
+            _ => (0, 1),
+        },
+        PlayerState::Walking => match direction {
+            PlayerDirection::Right => (14, 15),
+            PlayerDirection::Left => (10, 11),
+            PlayerDirection::Up => (6, 7),
+            _ => (2, 3),
+        },
     }
 }
 
@@ -137,6 +137,13 @@ enum PlayerState {
 
 #[derive(Component)]
 struct Player {
-    current_direction: Vec2,
+    current_direction: PlayerDirection,
     state: PlayerState,
+}
+
+enum PlayerDirection {
+    Up,
+    Down,
+    Left,
+    Right,
 }
