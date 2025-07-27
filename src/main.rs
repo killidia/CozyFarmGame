@@ -11,6 +11,7 @@ mod biome_interaction;
 mod map;
 mod player;
 mod sprite_animation;
+mod assets;
 
 fn main() {
     App::new()

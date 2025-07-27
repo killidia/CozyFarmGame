@@ -37,6 +37,7 @@ fn spawn_player(
             Player {
                 current_direction: PlayerDirection::Down,
                 state: PlayerState::default(),
+                current_tool: Tool::Axe,
             },
             AnimationIndices { first: 0, last: 1 },
             FrameTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
@@ -114,7 +115,7 @@ fn update_indices(mut query: Query<(&mut AnimationIndices, &mut Sprite, &Player)
     }
 }
 
-fn player_sprite_indices(state: &PlayerState, direction: &PlayerDirection) -> (usize, usize) {
+pub fn player_sprite_indices(state: &PlayerState, direction: &PlayerDirection) -> (usize, usize) {
     match state {
         PlayerState::Idle => match direction {
             PlayerDirection::Right => (12, 13),
@@ -128,25 +129,40 @@ fn player_sprite_indices(state: &PlayerState, direction: &PlayerDirection) -> (u
             PlayerDirection::Up => (6, 7),
             _ => (2, 3),
         },
+        PlayerState::Chopping => match direction {
+            PlayerDirection::Right => (14, 15),
+            PlayerDirection::Left => (12, 13),
+            PlayerDirection::Up => (10, 11),
+            _ => (8, 9),
+        },
     }
 }
 
 #[derive(Default)]
-enum PlayerState {
+pub enum PlayerState {
     #[default]
     Idle,
     Walking,
+    Chopping,
 }
 
 #[derive(Component)]
 pub struct Player {
-    current_direction: PlayerDirection,
-    state: PlayerState,
+    pub current_direction: PlayerDirection,
+    pub state: PlayerState,
+    pub current_tool: Tool,
 }
 
-enum PlayerDirection {
+pub enum PlayerDirection {
     Up,
     Down,
     Left,
     Right,
+}
+
+#[derive(PartialEq)]
+pub enum Tool {
+    Axe,
+    Hoe,
+    None,
 }
