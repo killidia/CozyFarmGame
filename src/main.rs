@@ -1,4 +1,5 @@
 use crate::biome_interaction::BiomeInteractionPlugin;
+use crate::inventory::InventoryPlugin;
 use crate::player::PlayerPlugin;
 use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
@@ -8,6 +9,7 @@ use map::MapPlugin;
 use sprite_animation::SpriteAnimationPlugin;
 
 mod biome_interaction;
+mod inventory;
 mod map;
 mod player;
 mod sprite_animation;
@@ -21,6 +23,7 @@ fn main() {
             PhysicsPlugins::default(),
             MapPlugin,
             PlayerPlugin,
+            InventoryPlugin,
             SpriteAnimationPlugin,
             BiomeInteractionPlugin,
         ))

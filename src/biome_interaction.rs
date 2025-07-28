@@ -1,3 +1,4 @@
+use crate::inventory::PlayerInventory;
 use crate::map::Rock;
 use crate::player::{Player, PlayerState, Tool};
 use avian2d::prelude::CollidingEntities;
@@ -80,10 +81,15 @@ fn remove_after_timer(
 fn collect_item(
     mut commands: Commands,
     player: Single<&Transform, With<Player>>,
-    collectibles: Query<(Entity, &Transform), With<Collectible>>,
+    collectibles: Query<(Entity, &Transform, &Collectible)>,
+    mut player_inventory: ResMut<PlayerInventory>,
 ) {
-    for (entity, transform) in collectibles {
+    for (entity, transform, collectible) in collectibles {
         if player.translation.distance(transform.translation) <= 3.0 {
+            if collectible.item == CollectibleType::Rock {
+                player_inventory.rock += 1;
+            }
+
             commands.entity(entity).despawn();
         }
     }
@@ -97,6 +103,7 @@ struct Collectible {
     item: CollectibleType,
 }
 
+#[derive(PartialEq)]
 enum CollectibleType {
     Rock,
 }
