@@ -1,5 +1,5 @@
 use crate::map::Rock;
-use crate::player::{player_sprite_indices, Player, PlayerState, Tool};
+use crate::player::{Player, PlayerState, Tool};
 use avian2d::prelude::CollidingEntities;
 use bevy::prelude::*;
 
@@ -19,8 +19,6 @@ fn remove_biome_element(
     input: Res<ButtonInput<KeyCode>>,
     colliding_query: Single<(&CollidingEntities, &mut Player, &mut Sprite)>,
     rocks: Query<Entity, With<Rock>>,
-    asset_server: Res<AssetServer>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     if input.just_pressed(KeyCode::KeyE) {
         let mut colliding_entities = colliding_query.into_inner();
@@ -34,22 +32,6 @@ fn remove_biome_element(
                     .insert(RemoveTimer(Timer::from_seconds(3.0, TimerMode::Once)));
 
                 colliding_entities.1.state = PlayerState::Chopping;
-
-                let texture = asset_server.load("characters/player_action.png");
-                let layout = TextureAtlasLayout::from_grid(UVec2::splat(48), 2, 10, None, None);
-                let texture_atlas_layout = texture_atlas_layouts.add(layout);
-
-                *colliding_entities.2 = Sprite::from_atlas_image(
-                    texture,
-                    TextureAtlas {
-                        layout: texture_atlas_layout,
-                        index: player_sprite_indices(
-                            &colliding_entities.1.state,
-                            &colliding_entities.1.current_direction,
-                        )
-                        .0,
-                    },
-                );
 
                 break;
             }
@@ -86,24 +68,11 @@ fn remove_after_timer(
                 Collectible {
                     item: CollectibleType::Rock,
                 },
-                Transform::from_xyz(transform.translation.x, transform.translation.y, 3.0),
+                Transform::from_xyz(transform.translation.x, transform.translation.y, 4.0),
                 Name::new("Collectible rock"),
             ));
 
             player.0.state = PlayerState::Idle;
-
-            // reset player
-            let player_texture = asset_server.load("characters/player.png");
-            let player_layout = TextureAtlasLayout::from_grid(UVec2::splat(48), 4, 4, None, None);
-            let player_texture_atlas_layout = texture_atlas_layouts.add(player_layout);
-
-            *player.1 = Sprite::from_atlas_image(
-                player_texture,
-                TextureAtlas {
-                    layout: player_texture_atlas_layout,
-                    index: 0,
-                },
-            );
         }
     }
 }

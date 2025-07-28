@@ -21,7 +21,7 @@ fn spawn_player(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let player_texture = asset_server.load("characters/player.png");
-    let player_layout = TextureAtlasLayout::from_grid(UVec2::splat(48), 4, 4, None, None);
+    let player_layout = TextureAtlasLayout::from_grid(UVec2::splat(48), 10, 4, None, None);
     let player_texture_atlas_layout = texture_atlas_layouts.add(player_layout);
 
     commands
@@ -33,7 +33,7 @@ fn spawn_player(
                     index: 0,
                 },
             ),
-            Transform::from_xyz(32.0, -32.0, 3.0),
+            Transform::from_xyz(32.0, -32.0, 4.0),
             Player {
                 current_direction: PlayerDirection::Down,
                 state: PlayerState::default(),
@@ -94,7 +94,9 @@ fn movement(
 
         player.0.0 = direction * PLAYER_SPEED;
     } else {
-        player.1.state = PlayerState::Idle;
+        if player.1.state == PlayerState::Walking {
+            player.1.state = PlayerState::Idle;
+        }
 
         player.0.0 = Vec2::ZERO;
     }
@@ -118,27 +120,27 @@ fn update_indices(mut query: Query<(&mut AnimationIndices, &mut Sprite, &Player)
 pub fn player_sprite_indices(state: &PlayerState, direction: &PlayerDirection) -> (usize, usize) {
     match state {
         PlayerState::Idle => match direction {
-            PlayerDirection::Right => (12, 13),
-            PlayerDirection::Left => (8, 9),
-            PlayerDirection::Up => (4, 5),
+            PlayerDirection::Right => (30, 31),
+            PlayerDirection::Left => (20, 21),
+            PlayerDirection::Up => (10, 11),
             _ => (0, 1),
         },
         PlayerState::Walking => match direction {
-            PlayerDirection::Right => (14, 15),
-            PlayerDirection::Left => (10, 11),
-            PlayerDirection::Up => (6, 7),
+            PlayerDirection::Right => (32, 33),
+            PlayerDirection::Left => (22, 23),
+            PlayerDirection::Up => (12, 13),
             _ => (2, 3),
         },
         PlayerState::Chopping => match direction {
-            PlayerDirection::Right => (14, 15),
-            PlayerDirection::Left => (12, 13),
-            PlayerDirection::Up => (10, 11),
-            _ => (8, 9),
+            PlayerDirection::Right => (37, 37),
+            PlayerDirection::Left => (26, 27),
+            PlayerDirection::Up => (16, 17),
+            _ => (6, 7),
         },
     }
 }
 
-#[derive(Default)]
+#[derive(Default, PartialEq)]
 pub enum PlayerState {
     #[default]
     Idle,
@@ -162,7 +164,6 @@ pub enum PlayerDirection {
 
 #[derive(PartialEq)]
 pub enum Tool {
-    Axe,
-    Hoe,
-    None,
+    Axe, /*Hoe,
+         None*/
 }

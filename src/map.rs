@@ -131,7 +131,7 @@ fn load_map(
                         Transform::from_xyz(
                             x as f32 * TILE_SIZE as f32,
                             -(y as f32 * TILE_SIZE as f32),
-                            4.0,
+                            10.0,
                         ),
                         Name::new("Grass Biome"),
                     ))
