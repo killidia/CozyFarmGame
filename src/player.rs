@@ -37,7 +37,7 @@ fn spawn_player(
             Player {
                 current_direction: PlayerDirection::Down,
                 state: PlayerState::default(),
-                current_tool: Tool::Axe,
+                current_tool: Tool::Hoe,
             },
             AnimationIndices { first: 0, last: 1 },
             FrameTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
@@ -137,6 +137,12 @@ pub fn player_sprite_indices(state: &PlayerState, direction: &PlayerDirection) -
             PlayerDirection::Up => (16, 17),
             _ => (6, 7),
         },
+        PlayerState::Tilling => match direction {
+            PlayerDirection::Right => (34, 35),
+            PlayerDirection::Left => (24, 25),
+            PlayerDirection::Up => (14, 15),
+            _ => (4, 5),
+        },
     }
 }
 
@@ -146,6 +152,7 @@ pub enum PlayerState {
     Idle,
     Walking,
     Chopping,
+    Tilling,
 }
 
 #[derive(Component)]
@@ -164,6 +171,7 @@ pub enum PlayerDirection {
 
 #[derive(PartialEq)]
 pub enum Tool {
-    Axe, /*Hoe,
-         None*/
+    Axe,
+    Hoe,
+    None,
 }

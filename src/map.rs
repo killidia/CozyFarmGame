@@ -1,6 +1,8 @@
+use crate::player::{Player, PlayerState, Tool};
 use crate::sprite_animation::{AnimationIndices, FrameTimer};
 use avian2d::prelude::{Collider, RigidBody};
 use bevy::prelude::*;
+use std::fmt::Debug;
 
 const TILE_SIZE: u8 = 16;
 
@@ -47,7 +49,8 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, load_map);
+        app.add_systems(Startup, load_map)
+            .add_systems(Update, till_after_timer);
     }
 }
 
@@ -96,21 +99,25 @@ fn load_map(
     for (y, row) in GRASS_LAYER.iter().enumerate() {
         for (x, tile) in row.iter().enumerate() {
             if tile >= &0 {
-                commands.spawn((
-                    Sprite::from_atlas_image(
-                        grass_texture.clone(),
-                        TextureAtlas {
-                            layout: grass_texture_atlas_layout.clone(),
-                            index: *tile as usize,
-                        },
-                    ),
-                    Transform::from_xyz(
-                        x as f32 * TILE_SIZE as f32,
-                        -(y as f32 * TILE_SIZE as f32),
-                        2.0,
-                    ),
-                    Name::new("grass"),
-                ));
+                commands
+                    .spawn((
+                        Sprite::from_atlas_image(
+                            grass_texture.clone(),
+                            TextureAtlas {
+                                layout: grass_texture_atlas_layout.clone(),
+                                index: *tile as usize,
+                            },
+                        ),
+                        Transform::from_xyz(
+                            x as f32 * TILE_SIZE as f32,
+                            -(y as f32 * TILE_SIZE as f32),
+                            2.0,
+                        ),
+                        Tillable,
+                        Pickable::default(),
+                        Name::new("grass"),
+                    ))
+                    .observe(till_grass);
             }
         }
     }
@@ -178,5 +185,68 @@ fn load_map(
     }
 }
 
+fn till_grass(
+    trigger: Trigger<Pointer<Click>>,
+    mut commands: Commands,
+    mut player: Single<(&Transform, &mut Player)>,
+    grass_tiles: Query<(Entity, &Transform)>,
+) {
+    let Ok((grass_entity, grass_transform)) = grass_tiles.get(trigger.target()) else {
+        return;
+    };
+
+    if player.1.current_tool == Tool::Hoe
+        && player.0.translation.distance(grass_transform.translation) <= 24.0
+    {
+        player.1.state = PlayerState::Tilling;
+
+        commands
+            .entity(grass_entity)
+            .insert(TilledTimer(Timer::from_seconds(2.0, TimerMode::Once)));
+    }
+}
+
+fn till_after_timer(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut player: Single<&mut Player>,
+    mut grass_tiles: Query<(Entity, &Transform, &mut TilledTimer)>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    for (entity, transform, mut tilled_timer) in &mut grass_tiles {
+        tilled_timer.0.tick(time.delta());
+
+        if tilled_timer.0.just_finished() {
+            player.state = PlayerState::Idle;
+
+            // replace grass tile by dirt tile
+            commands.entity(entity).despawn();
+
+            let dirt_texture = asset_server.load("tilesets/dirt.png");
+            let dirt_layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 11, 7, None, None);
+            let dirt_texture_atlas_layout = texture_atlas_layouts.add(dirt_layout);
+
+            commands.spawn((
+                Sprite::from_atlas_image(
+                    dirt_texture,
+                    TextureAtlas {
+                        layout: dirt_texture_atlas_layout,
+                        index: 12,
+                    },
+                ),
+                Transform::from_translation(transform.translation),
+                Name::new("dirt"),
+            ));
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct Rock;
+
+#[derive(Component, Debug)]
+struct Tillable;
+
+#[derive(Component)]
+struct TilledTimer(Timer);
