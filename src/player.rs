@@ -173,5 +173,6 @@ pub enum PlayerDirection {
 pub enum Tool {
     Axe,
     Hoe,
+    TomatoSeed,
     None,
 }

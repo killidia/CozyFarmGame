@@ -50,7 +50,7 @@ pub struct MapPlugin;
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, load_map)
-            .add_systems(Update, till_after_timer);
+            .add_systems(Update, (till_after_timer, growing_after_timer));
     }
 }
 
@@ -227,17 +227,93 @@ fn till_after_timer(
             let dirt_layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 11, 7, None, None);
             let dirt_texture_atlas_layout = texture_atlas_layouts.add(dirt_layout);
 
-            commands.spawn((
-                Sprite::from_atlas_image(
-                    dirt_texture,
-                    TextureAtlas {
-                        layout: dirt_texture_atlas_layout,
-                        index: 12,
-                    },
-                ),
-                Transform::from_translation(transform.translation),
-                Name::new("dirt"),
-            ));
+            commands
+                .spawn((
+                    Sprite::from_atlas_image(
+                        dirt_texture,
+                        TextureAtlas {
+                            layout: dirt_texture_atlas_layout,
+                            index: 12,
+                        },
+                    ),
+                    Transform::from_translation(transform.translation),
+                    Seedable,
+                    Pickable::default(),
+                    Name::new("dirt"),
+                ))
+                .observe(seed_dirt);
+        }
+    }
+}
+
+fn seed_dirt(
+    trigger: Trigger<Pointer<Click>>,
+    mut commands: Commands,
+    player: Single<(&Transform, &Player)>,
+    dirt_tiles: Query<(Entity, &Transform)>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    let Ok((dirt_entity, dirt_transform)) = dirt_tiles.get(trigger.target()) else {
+        return;
+    };
+
+    if player.1.current_tool == Tool::Hoe
+        && player.0.translation.distance(dirt_transform.translation) <= 24.0
+    {
+        let texture = asset_server.load("tilesets/plants.png");
+        let layout = TextureAtlasLayout::from_grid(UVec2::splat(16), 6, 2, None, None);
+        let texture_atlas_layout = texture_atlas_layouts.add(layout);
+
+        commands.spawn((
+            Sprite::from_atlas_image(
+                texture,
+                TextureAtlas {
+                    layout: texture_atlas_layout,
+                    index: 7,
+                },
+            ),
+            Transform::from_xyz(
+                dirt_transform.translation.x,
+                dirt_transform.translation.y,
+                3.0,
+            ),
+            EndGrowing(10),
+            GrowingTimer(Timer::from_seconds(15.0, TimerMode::Repeating)),
+            DirtTile(dirt_entity),
+            Name::new("plant"),
+        ));
+
+        commands.entity(dirt_entity).remove::<Seedable>();
+    }
+}
+
+fn growing_after_timer(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut growings: Query<(
+        Entity,
+        &mut GrowingTimer,
+        &EndGrowing,
+        &mut Sprite,
+        &DirtTile,
+    )>,
+) {
+    for (entity, mut growing_timer, growing_indices, mut sprite, dirt_tile) in &mut growings {
+        growing_timer.0.tick(time.delta());
+
+        if growing_timer.0.just_finished() {
+            if let Some(atlas) = sprite.texture_atlas.as_mut() {
+                if atlas.index == growing_indices.0 {
+                    // despawn entity
+                    commands.entity(entity).despawn();
+
+                    // mark dirt tile seedable
+                    commands.entity(dirt_tile.0).insert(Seedable);
+                } else {
+                    atlas.index += 1;
+                }
+            }
         }
     }
 }
@@ -250,3 +326,15 @@ struct Tillable;
 
 #[derive(Component)]
 struct TilledTimer(Timer);
+
+#[derive(Component)]
+struct Seedable;
+
+#[derive(Component)]
+struct DirtTile(Entity);
+
+#[derive(Component)]
+struct EndGrowing(usize);
+
+#[derive(Component)]
+struct GrowingTimer(Timer);
