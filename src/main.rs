@@ -1,6 +1,7 @@
 use crate::biome_interaction::BiomeInteractionPlugin;
 use crate::inventory::InventoryPlugin;
 use crate::player::PlayerPlugin;
+use crate::ui::UiPlugin;
 use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
@@ -13,6 +14,7 @@ mod inventory;
 mod map;
 mod player;
 mod sprite_animation;
+mod ui;
 
 fn main() {
     App::new()
@@ -26,6 +28,7 @@ fn main() {
             InventoryPlugin,
             SpriteAnimationPlugin,
             BiomeInteractionPlugin,
+            UiPlugin,
         ))
         .run();
 }
